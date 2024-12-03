@@ -1,11 +1,6 @@
-<!--
- * @Author: Emptyfire emptyfire@outlook.com
- * @Date: 2024-12-01 17:19:21
- * @LastEditors: Emptyfire emptyfire@outlook.com
- * @LastEditTime: 2024-12-01 17:31:05
- * @FilePath: \xunlianying_Project\Readme.md
- * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
--->
-# 注意事项
-my-app 为 react native expo 英文官网新版框架,
-开发说明文档 https://reactnative.dev/docs/environment-setup
+# 项目说明
+- admin-man 为训练营后端项目,项目使用开源GitHub框架admin3作为基础版本的实现
+
+- xunlianying_app_flutter 为使用flutter框架实现的安卓前端项目
+
+- xunlianyingAPP为原生安卓框架实现的前端项目,已实现三个页面,登录-注册-展示用户信息

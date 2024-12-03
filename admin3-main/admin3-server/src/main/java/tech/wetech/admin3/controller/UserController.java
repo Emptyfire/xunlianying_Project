@@ -44,6 +44,7 @@ public class UserController {
     return new ResponseEntity<>(userService.createUser(request.username(), request.avatar(), request.gender(), User.State.NORMAL, organization), HttpStatus.CREATED);
   }
 
+
   @RequiresPermissions("user:update")
   @PutMapping("/{userId}")
   public ResponseEntity<User> updateUser(@PathVariable Long userId, @RequestBody @Valid UpdateUserRequest request) {

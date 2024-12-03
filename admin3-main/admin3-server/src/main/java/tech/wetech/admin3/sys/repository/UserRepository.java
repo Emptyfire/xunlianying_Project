@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 import tech.wetech.admin3.sys.model.Organization;
 import tech.wetech.admin3.sys.model.User;
 
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -28,4 +29,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
   @Query("select count(user.id) from User user where user.organization=:organization or user.organization.parentIds like concat(:orgParentIds, '%')")
   long countOrgUsers(Organization organization, String orgParentIds);
+
+  @Query("from User where username = :username")
+  Optional<User> findByUsername(String username);
 }

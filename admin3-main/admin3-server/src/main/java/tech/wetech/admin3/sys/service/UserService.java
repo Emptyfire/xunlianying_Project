@@ -12,11 +12,14 @@ import tech.wetech.admin3.sys.event.UserUpdated;
 import tech.wetech.admin3.sys.exception.UserException;
 import tech.wetech.admin3.sys.model.Organization;
 import tech.wetech.admin3.sys.model.User;
+import tech.wetech.admin3.sys.model.UserCredential;
 import tech.wetech.admin3.sys.repository.UserRepository;
+import tech.wetech.admin3.sys.repository.UserCredentialRepository;
 import tech.wetech.admin3.sys.service.dto.OrgUserDTO;
 import tech.wetech.admin3.sys.service.dto.PageDTO;
 import tech.wetech.admin3.sys.service.dto.UserinfoDTO;
 
+import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Set;
@@ -31,9 +34,14 @@ import static tech.wetech.admin3.common.CommonResultStatus.RECORD_NOT_EXIST;
 public class UserService {
 
   private final UserRepository userRepository;
+  private final UserCredentialRepository userCredentialRepository;
 
-  public UserService(UserRepository userRepository) {
-    this.userRepository = userRepository;
+  public UserService(
+      UserRepository userRepository,
+      UserCredentialRepository userCredentialRepository
+  ) {
+      this.userRepository = userRepository;
+      this.userCredentialRepository = userCredentialRepository;
   }
 
   @Transactional
@@ -70,6 +78,8 @@ public class UserService {
     String orgParentIds = organization.makeSelfAsParentIds();
     return userRepository.countOrgUsers(organization, orgParentIds) > 0;
   }
+
+
 
 
   @Transactional
@@ -112,5 +122,42 @@ public class UserService {
     User user = findUserById(userId);
     userRepository.delete(user);
     DomainEventPublisher.instance().publish(new UserDeleted(user));
+  }
+
+  @Transactional
+  public User register(String username, String password, User.Gender gender) {
+    // 1. 检查用户名是否已存在
+    if (userRepository.findByUsername(username).isPresent()) {
+        throw new UserException(CommonResultStatus.PARAM_ERROR, "用户名已存在");
+    }
+
+    // 2. 创建用户实体
+    User user = new User();
+    user.setUsername(username);
+    user.setGender(gender);
+    user.setState(User.State.NORMAL);
+    user.setCreatedTime(LocalDateTime.now());
+
+    // 3. 保存用户
+    user = userRepository.save(user);
+
+    // 4. 创建用户凭证
+    UserCredential credential = new UserCredential();
+    credential.setUser(user);
+    credential.setIdentifier(username);
+    try {
+        credential.setCredential(SecurityUtil.md5(username, password));
+    } catch (NoSuchAlgorithmException e) {
+        throw new BusinessException(CommonResultStatus.FAIL, "密码加密失败：" + e.getMessage());
+    }
+    credential.setIdentityType(UserCredential.IdentityType.PASSWORD);
+
+    // 5. 保存凭证
+    userCredentialRepository.save(credential);
+
+    // 6. 发布用户创建事件
+    DomainEventPublisher.instance().publish(new UserCreated(user));
+
+    return user;
   }
 }
